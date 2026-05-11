@@ -6,7 +6,8 @@ on:
 jobs:
   build-macos:
     name: Build macOS App
-    runs-on: macos-13
+    runs-on: macos-latest
+    timeout-minutes: 30
 
     steps:
       - name: Baixar código
@@ -16,8 +17,6 @@ jobs:
         run: |
           pwd
           ls -la
-          echo "---- .github/workflows ----"
-          ls -la .github/workflows || true
 
       - name: Configurar Python
         uses: actions/setup-python@v5
