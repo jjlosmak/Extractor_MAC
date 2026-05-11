@@ -4,13 +4,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macos-arm64:
-    name: Build macOS Apple Silicon arm64
-    runs-on: macos-26
+  build-macos:
+    name: Build macOS App
+    runs-on: macos-13
 
     steps:
       - name: Baixar código
         uses: actions/checkout@v4
+
+      - name: Mostrar arquivos
+        run: |
+          pwd
+          ls -la
+          echo "---- .github/workflows ----"
+          ls -la .github/workflows || true
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -20,64 +27,19 @@ jobs:
       - name: Instalar dependências
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pdfplumber
-
-      - name: Verificar arquivos
-        run: |
-          ls -la
-          python --version
-          pyinstaller --version
+          python -m pip install pyinstaller pdfplumber
 
       - name: Gerar aplicativo macOS
         run: |
-          pyinstaller --windowed --name "PDF Extractor" pdf_extractor_gui.py
+          python -m PyInstaller --windowed --name "PDF Extractor" pdf_extractor_gui.py
 
       - name: Compactar app
         run: |
           cd dist
-          zip -r "PDF-Extractor-macOS-Apple-Silicon-arm64.zip" "PDF Extractor.app"
+          zip -r "PDF-Extractor-macOS.zip" "PDF Extractor.app"
 
       - name: Enviar artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PDF-Extractor-macOS-Apple-Silicon-arm64
-          path: dist/PDF-Extractor-macOS-Apple-Silicon-arm64.zip
-
-  build-macos-intel:
-    name: Build macOS Intel x64
-    runs-on: macos-26-intel
-
-    steps:
-      - name: Baixar código
-        uses: actions/checkout@v4
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Instalar dependências
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller pdfplumber
-
-      - name: Verificar arquivos
-        run: |
-          ls -la
-          python --version
-          pyinstaller --version
-
-      - name: Gerar aplicativo macOS
-        run: |
-          pyinstaller --windowed --name "PDF Extractor" pdf_extractor_gui.py
-
-      - name: Compactar app
-        run: |
-          cd dist
-          zip -r "PDF-Extractor-macOS-Intel-x64.zip" "PDF Extractor.app"
-
-      - name: Enviar artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PDF-Extractor-macOS-Intel-x64
-          path: dist/PDF-Extractor-macOS-Intel-x64.zip
+          name: PDF-Extractor-macOS
+          path: dist/PDF-Extractor-macOS.zip
