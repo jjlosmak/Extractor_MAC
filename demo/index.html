@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Extractor | versão para navegador</title>
+<meta name="description" content="Extrai o texto de vários PDFs de uma vez, direto no navegador. Nenhum arquivo sai do seu computador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo: #0B1A33; --linha: #223A66; --texto: #E8EEFA; --suave: #93A6CA; --ordem: #3D8BFF; --caos: #FF8A3D;
+    --janela: #F3F4F7; --janela-ink: #1D2433; --janela-linha: #D5D9E2; --janela-suave: #5D6576;
+    --display: "Chakra Petch", "Segoe UI", sans-serif; --corpo: "IBM Plex Sans", "Segoe UI", sans-serif; --mono: "IBM Plex Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--texto); font: 16px/1.55 var(--corpo); }
+  a { color: var(--ordem); }
+  :focus-visible { outline: 2px solid var(--ordem); outline-offset: 2px; }
+  .container { width: min(980px, 100% - 32px); margin: 0 auto; }
+  header { padding: 28px 0 8px; }
+  .volta { font-size: 14px; color: var(--suave); text-decoration: none; }
+  h1 { font: 700 clamp(28px, 4vw, 42px)/1.1 var(--display); margin: 10px 0 8px; }
+  .lead { color: var(--suave); max-width: 68ch; margin: 0; }
+  .privado { margin-top: 12px; font: 13px/1.4 var(--mono); color: var(--caos); }
+
+  /* a janela do app, como ela é no Mac */
+  .janela { margin: 28px auto 20px; background: var(--janela); color: var(--janela-ink); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, .45); border: 1px solid #000; }
+  .barra { height: 34px; background: linear-gradient(#E9EAEE, #DCDDE2); border-bottom: 1px solid #C4C6CD; display: flex; align-items: center; gap: 8px; padding: 0 12px; position: relative; }
+  .barra i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .barra i:nth-child(1) { background: #FF5F57; } .barra i:nth-child(2) { background: #FEBC2E; } .barra i:nth-child(3) { background: #28C840; }
+  .barra span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: #4A4F5C; pointer-events: none; }
+  .app { padding: 18px 20px 20px; }
+  .app h2 { font: 700 21px/1.2 var(--corpo); margin: 0 0 14px; }
+  fieldset { border: 1px solid var(--janela-linha); border-radius: 6px; margin: 0 0 12px; padding: 10px 12px 12px; }
+  legend { font-size: 13.5px; padding: 0 4px; color: var(--janela-suave); }
+  .linha { display: flex; gap: 10px; align-items: center; }
+  .linha input[type=text] { flex: 1; min-width: 0; height: 32px; border: 1px solid var(--janela-linha); border-radius: 5px; padding: 0 9px; font: 14px var(--corpo); background: #fff; color: var(--janela-ink); }
+  .bt { height: 32px; padding: 0 14px; border-radius: 5px; border: 1px solid #B9BDC7; background: #fff; color: var(--janela-ink); font: 14px var(--corpo); cursor: pointer; white-space: nowrap; }
+  .bt:hover { background: #F7F8FA; }
+  .bt.pri { background: #1F6FEB; border-color: #1F6FEB; color: #fff; font-weight: 600; }
+  .bt.pri:disabled { opacity: .55; cursor: progress; }
+  .bt:disabled { cursor: not-allowed; opacity: .6; }
+  .opcoes { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 4px 0 12px; flex-wrap: wrap; }
+  .opcoes label { display: flex; gap: 8px; align-items: center; font-size: 14.5px; cursor: pointer; }
+  .soltar { border: 2px dashed var(--janela-linha); border-radius: 6px; padding: 10px; text-align: center; font-size: 13.5px; color: var(--janela-suave); margin-top: 10px; transition: border-color .15s, background .15s; }
+  .soltar.sobre { border-color: #1F6FEB; background: #E8F0FE; color: var(--janela-ink); }
+  progress { width: 100%; height: 10px; accent-color: #1F6FEB; }
+  .status { font-size: 13.5px; color: var(--janela-suave); margin-top: 4px; }
+  .log { background: #fff; border: 1px solid var(--janela-linha); border-radius: 5px; height: 150px; overflow: auto; padding: 8px 10px; font: 12.5px/1.55 var(--mono); white-space: pre-wrap; color: #2B3140; }
+
+  /* resultado */
+  .resultado { margin: 8px 0 48px; }
+  .resultado[hidden] { display: none; }
+  .resultado h3 { font: 700 22px/1.2 var(--display); margin: 0 0 6px; }
+  .resumo { display: flex; gap: 22px; flex-wrap: wrap; margin: 0 0 14px; color: var(--suave); font-size: 15px; }
+  .resumo b { color: var(--texto); font: 600 20px/1 var(--display); margin-right: 4px; }
+  .acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .baixar { display: inline-flex; align-items: center; height: 42px; padding: 0 18px; border-radius: 6px; background: var(--ordem); color: #fff; font-weight: 600; text-decoration: none; border: 0; cursor: pointer; font-size: 15px; }
+  .copiar { height: 42px; padding: 0 16px; border-radius: 6px; border: 1.5px solid var(--ordem); background: none; color: var(--texto); font: 600 15px var(--corpo); cursor: pointer; }
+  pre.saida { margin: 0; background: #071226; border: 1px solid var(--linha); border-radius: 8px; padding: 16px; max-height: 460px; overflow: auto; font: 13px/1.6 var(--mono); color: #C9D6EE; white-space: pre-wrap; word-break: break-word; }
+  .como { color: var(--suave); font-size: 15px; max-width: 70ch; }
+  footer { border-top: 1px solid var(--linha); padding: 22px 0 36px; color: var(--suave); font-size: 14px; }
+  @media (max-width: 560px) { .linha { flex-wrap: wrap; } .linha .bt { width: 100%; } }
+</style>
+</head>
+<body>
+<header class="container">
+  <a class="volta" href="https://github.com/jjlosmak/Extractor_MAC">Voltar ao repositório</a>
+  <h1>PDF Extractor, direto no navegador</h1>
+  <p class="lead">A mesma ideia do app para Mac: escolha vários PDFs, clique em executar e receba um único arquivo de texto com o conteúdo de todos, separado por arquivo e sem os cabeçalhos e rodapés repetidos.</p>
+  <p class="privado">Os PDFs são lidos no seu navegador. Nenhum arquivo é enviado para lugar nenhum.</p>
+</header>
+
+<main class="container">
+  <div class="janela" role="region" aria-label="Extrator de Texto de PDFs">
+    <div class="barra" aria-hidden="true"><i></i><i></i><i></i><span>PDF Extractor</span></div>
+    <div class="app">
+      <h2>Extrator de Texto de PDFs</h2>
+
+      <fieldset>
+        <legend>1. Pasta de entrada</legend>
+        <div class="linha">
+          <input type="text" id="origem" readonly placeholder="Nenhum PDF selecionado" aria-label="PDFs selecionados">
+          <button class="bt" id="btPasta" type="button">Selecionar pasta</button>
+          <button class="bt" id="btArquivos" type="button">Escolher PDFs</button>
+        </div>
+        <div class="soltar" id="soltar">Ou arraste PDFs para cá. Não tem nenhum à mão? <button class="bt" id="btExemplos" type="button" style="height:28px;margin-left:6px">Usar PDFs de exemplo</button></div>
+        <input type="file" id="inPasta" webkitdirectory multiple hidden>
+        <input type="file" id="inArquivos" accept="application/pdf,.pdf" multiple hidden>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. Arquivo de saída</legend>
+        <div class="linha"><input type="text" id="saida" value="output_extracted.txt" aria-label="Nome do arquivo de saída"></div>
+      </fieldset>
+
+      <div class="opcoes">
+        <label><input type="checkbox" id="dedup" checked> Remover cabeçalhos/rodapés repetidos</label>
+        <button class="bt pri" id="executar" type="button" disabled>Executar extração</button>
+      </div>
+
+      <fieldset>
+        <legend>Progresso</legend>
+        <progress id="barra" value="0" max="1"></progress>
+        <div class="status" id="status">Selecione uma pasta com PDFs para começar.</div>
+      </fieldset>
+
+      <fieldset style="margin:0">
+        <legend>Log</legend>
+        <div class="log" id="log" aria-live="polite"></div>
+      </fieldset>
+    </div>
+  </div>
+
+  <section class="resultado" id="resultado" hidden aria-labelledby="t-res">
+    <h3 id="t-res">Extração concluída</h3>
+    <div class="resumo" id="resumo"></div>
+    <div class="acoes">
+      <a class="baixar" id="baixar" download>Baixar o .txt</a>
+      <button class="copiar" id="copiar" type="button">Copiar texto</button>
+    </div>
+    <pre class="saida" id="previa"></pre>
+  </section>
+
+  <p class="como">O app original é em Python, com pdfplumber e Tkinter, e o GitHub Actions gera o aplicativo para Mac sozinho. Esta página refaz a mesma lógica em JavaScript com o PDF.js: as mesmas regras de limpeza, o mesmo formato de relatório e o mesmo resumo no final.</p>
+</main>
+
+<footer class="container">
+  Código em <a href="https://github.com/jjlosmak/Extractor_MAC">github.com/jjlosmak/Extractor_MAC</a>. Feito por <a href="https://jjlosmak.github.io">Jerônimo Leite</a>.
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const $ = id => document.getElementById(id);
+let arquivos = [], pastaNome = '', urlTxt = null;
+
+function log(msg) { const l = $('log'); l.textContent += msg + '\n'; l.scrollTop = l.scrollHeight; }
+
+function definirArquivos(lista, nome) {
+  // como no app: só .pdf, em ordem alfabética
+  arquivos = Array.from(lista).filter(f => /\.pdf$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name));
+  pastaNome = nome || (arquivos[0] && arquivos[0].webkitRelativePath ? arquivos[0].webkitRelativePath.split('/')[0] : 'arquivos selecionados');
+  $('origem').value = arquivos.length ? `${pastaNome} (${arquivos.length} PDF${arquivos.length > 1 ? 's' : ''})` : '';
+  $('executar').disabled = !arquivos.length;
+  if (arquivos.length) log(`Pasta selecionada: ${pastaNome}`);
+  else alertaStatus('Nenhum arquivo PDF foi encontrado nessa seleção.');
+}
+function alertaStatus(t) { $('status').textContent = t; log(t); }
+
+$('btPasta').onclick = () => $('inPasta').click();
+$('btArquivos').onclick = () => $('inArquivos').click();
+$('inPasta').onchange = e => definirArquivos(e.target.files);
+$('inArquivos').onchange = e => definirArquivos(e.target.files, 'arquivos selecionados');
+
+const soltar = $('soltar');
+['dragenter', 'dragover'].forEach(t => soltar.addEventListener(t, e => { e.preventDefault(); soltar.classList.add('sobre'); }));
+['dragleave', 'drop'].forEach(t => soltar.addEventListener(t, e => { e.preventDefault(); soltar.classList.remove('sobre'); }));
+soltar.addEventListener('drop', e => definirArquivos(e.dataTransfer.files, 'arquivos arrastados'));
+
+$('btExemplos').onclick = async () => {
+  const nomes = ['ata-reuniao-coordenacao.pdf', 'curriculo-amanda-ficticia.pdf', 'documento-escaneado.pdf', 'relatorio-producao-setembro.pdf'];
+  try {
+    const lista = await Promise.all(nomes.map(async n => new File([await (await fetch('exemplos/' + n)).blob()], n, { type: 'application/pdf' })));
+    definirArquivos(lista, 'exemplos');
+  } catch (e) { alertaStatus('Não consegui carregar os PDFs de exemplo agora.'); }
+};
+
+/* ---------- a lógica do app, traduzida do Python ---------- */
+
+// extract_text_from_pdf: texto de todas as páginas, linha por linha
+async function extrairTexto(arquivo) {
+  const pdf = await pdfjsLib.getDocument({ data: await arquivo.arrayBuffer() }).promise;
+  const paginas = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    try {
+      const conteudo = await (await pdf.getPage(n)).getTextContent();
+      const linhas = [];
+      conteudo.items.filter(i => i.str && i.str.trim())
+        .map(i => ({ s: i.str, x: i.transform[4], y: i.transform[5] }))
+        .sort((a, b) => b.y - a.y || a.x - b.x)
+        .forEach(i => {
+          const l = linhas.find(l => Math.abs(l.y - i.y) < 2);
+          if (l) l.partes.push(i); else linhas.push({ y: i.y, partes: [i] });
+        });
+      const texto = linhas.map(l => l.partes.sort((a, b) => a.x - b.x).map(p => p.s).join(' ').replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n');
+      if (texto) paginas.push(texto);
+    } catch (e) {
+      paginas.push(`[ERRO ao processar página ${n}: ${e.message}]`);
+    }
+  }
+  return paginas.join('\n');
+}
+
+// deduplicate_headers_footers: tira linhas que se repetem 3 vezes ou mais
+function removerRepetidas(texto, limite = 3) {
+  const linhas = texto.split('\n');
+  const freq = new Map();
+  linhas.map(l => l.trim()).filter(Boolean).forEach(l => freq.set(l, (freq.get(l) || 0) + 1));
+  return linhas.filter(l => !((freq.get(l.trim()) || 0) >= limite)).join('\n');
+}
+
+// format_pdf_block
+function bloco(nome, texto) {
+  const corpo = texto.trim() ? texto.trim() : '[PDF vazio ou sem texto extraível]';
+  return `\n${'='.repeat(60)}\n==== ${nome} ====\n${'='.repeat(60)}\n\n${corpo}\n`;
+}
+
+$('executar').onclick = async () => {
+  if (!arquivos.length) return;
+  $('executar').disabled = true; $('resultado').hidden = true;
+  $('barra').max = arquivos.length; $('barra').value = 0;
+  $('status').textContent = 'Iniciando extração...';
+  log(`Iniciando. PDFs encontrados: ${arquivos.length}`);
+
+  const stats = { ok: 0, empty: 0, error: 0 };
+  let saida = `PDF Extraction Report\nDiretório: ${pastaNome}\nTotal de PDFs: ${arquivos.length}\n${'='.repeat(60)}\n`;
+
+  for (let i = 0; i < arquivos.length; i++) {
+    const f = arquivos[i];
+    $('barra').value = i + 1;
+    $('status').textContent = `${i + 1}/${arquivos.length}: Processando ${f.name}`;
+    log(`Processando: ${f.name}`);
+    try {
+      let texto = await extrairTexto(f);
+      if (!texto.trim()) stats.empty++;
+      else { if ($('dedup').checked) texto = removerRepetidas(texto); stats.ok++; }
+      saida += bloco(f.name, texto);
+    } catch (e) {
+      stats.error++;
+      saida += bloco(f.name, `[ERRO: ${e.message}]`);
+      log(`ERRO em ${f.name}: ${e.message}`);
+    }
+  }
+
+  const nomeSaida = ($('saida').value.trim() || 'output_extracted.txt').replace(/[\\/]/g, '_');
+  if (urlTxt) URL.revokeObjectURL(urlTxt);
+  urlTxt = URL.createObjectURL(new Blob([saida], { type: 'text/plain;charset=utf-8' }));
+  $('baixar').href = urlTxt; $('baixar').download = nomeSaida.endsWith('.txt') ? nomeSaida : nomeSaida + '.txt';
+
+  $('status').textContent = 'Extração concluída.';
+  log('='.repeat(50));
+  log(`Concluído! Arquivo gerado: ${nomeSaida}`);
+  log(`Com texto: ${stats.ok}`); log(`Vazios: ${stats.empty}`); log(`Com erro: ${stats.error}`);
+
+  $('resumo').innerHTML = `<span><b>${stats.ok}</b>com texto</span><span><b>${stats.empty}</b>vazios ou escaneados</span><span><b>${stats.error}</b>com erro</span>`;
+  $('previa').textContent = saida;
+  $('resultado').hidden = false;
+  $('executar').disabled = false;
+  $('resultado').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+};
+
+$('copiar').onclick = async () => {
+  try { await navigator.clipboard.writeText($('previa').textContent); $('copiar').textContent = 'Texto copiado'; }
+  catch (e) { $('copiar').textContent = 'Não deu para copiar'; }
+  setTimeout(() => $('copiar').textContent = 'Copiar texto', 2000);
+};
+</script>
+</body>
+</html>

@@ -7,7 +7,10 @@
 ![GitHub Actions](https://img.shields.io/badge/Build-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-.app-000?style=flat-square&logo=apple&logoColor=white)
 
-<!-- 📸 Coloque aqui um print ou GIF do app rodando: ![PDF Extractor em ação](docs/demo.gif) -->
+### ▶️ [Testar no navegador](https://jjlosmak.github.io/Extractor_MAC/)
+<sub>Use seus próprios PDFs ou os de exemplo. Tudo é processado no seu navegador: nenhum arquivo é enviado.</sub>
+
+![PDF Extractor rodando no navegador, com o log e o relatório gerado](docs/demo.png)
 
 ---
 
@@ -50,6 +53,10 @@ Basta enviar o `.zip` para a pessoa. Ela descompacta e abre o **PDF Extractor.ap
 pip install -r requirements.txt
 python pdf_extractor_gui.py
 ```
+
+## Versão para navegador
+
+A pasta [`demo/`](demo/) refaz a mesma lógica em JavaScript com o **PDF.js**: mesma ordem dos arquivos, mesma regra de remoção de cabeçalhos e rodapés (linhas que se repetem 3 vezes ou mais), mesmo formato de relatório e mesmo resumo. Com os PDFs de [`demo/exemplos/`](demo/exemplos/), o relatório gerado no navegador é **idêntico** ao do app em Python.
 
 ## Stack
 
